@@ -4,7 +4,7 @@
 #define ss D8
 #define rst D0
 #define dio0 D2
-#define motor LED_BUILTIN
+#define motor D1
 
 String device_id;
 String Lora_Ra02;
