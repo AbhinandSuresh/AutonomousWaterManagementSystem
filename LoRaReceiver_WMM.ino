@@ -12,7 +12,8 @@ int pos1, pos2;
 
 void setup() {
   pinMode(motor, OUTPUT);
-  /*Serial.begin(9600);
+  /* FIX IT: maybe used for debuging later
+    Serial.begin(9600);
     while (!Serial);
     Serial.println(" ");
     Serial.println("LoRa Receiver Callback");*/
