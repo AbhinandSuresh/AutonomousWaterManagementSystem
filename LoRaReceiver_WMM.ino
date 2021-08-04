@@ -44,14 +44,14 @@ void loop() {
     device_id = LoRaData.substring(0, pos1);
     Lora_Ra02 = LoRaData.substring(pos1 + 1, pos2);
 
-    Serial.print(F("Device ID: "));
+   /* Serial.print(F("Device ID: "));
     Serial.println(device_id);
 
     Serial.print(F("Data Received from LoRa: "));
     Serial.print(Lora_Ra02);
     Serial.print(" centimeters;  with RSSI ");
     Serial.println(LoRa.packetRssi());
-    Serial.println("");
+    Serial.println("");*/
   }
 
   //Compare received value to turn off or on the motor/LED
