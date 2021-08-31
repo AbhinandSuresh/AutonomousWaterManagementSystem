@@ -12,33 +12,30 @@
 #include <SPI.h>
 #include<String.h>
 #include <LoRa.h>
-#define echoPin 5
+#define echoPin 5                //Waterproof ultrasonic level sensor pin to D5,D6 pins
 #define trigPin 6
 #define onAck "mon"
 #define offAck "mof"
-//Waterproof ultrasonic level sensor pin to D5,D6 pins
-const int csPin = 10;           // LoRa radio chip select
-const int resetPin = 9;         // LoRa radio reset
-const int irqPin = 2;           // hardware interrupt pin
-int sec = 1;                    //default sleep delay seconds
-byte localAddress = 0xFF;       // address of this device
-byte destination = 0x80;        // destination to send to
-String acknowledgment;
+#define csPin = 10;              // LoRa radio chip select
+#define resetPin = 9;            // LoRa radio reset
+#define irqPin = 2;              // hardware interrupt pin
+int loraval, sec = 1;            // initialize lora_received value variable and default sleep delay seconds
+byte localAddress = 0xFF;        // address of this device
+byte destination = 0x80;         // destination to send to
+byte count = 0;
+String acknowledgment, device_id = "IoTuneZ_906: ",pkt = "";
 long duration;
 float level;
-byte count = 0;
-String device_id = "IoTuneZ_906: "; // a fancy device id
-int loraval;
-bool isPktAvailable = false;
-String  pkt = "";
-bool isAcknoledged;
+bool isAcknoledged, isPktAvailable = false;
 
 /*Function for arduino board to go to sleep for some seconds*/
 void system_sleep(int sleepVal)
 {
   delay(5);
+  #ifdef DEBUG
   Serial.println("going to sleep for " + String(sleepVal) + "seconds.");
   Serial.flush();
+  #endif
   for (sleepVal; (sleepVal) > 0; (sleepVal)--)
   {
     LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_OFF, TWI_OFF);
@@ -75,7 +72,9 @@ void sendData()
   //delay(100);
   String LoRaMessage = String(device_id) + String(count) + ">" + String(level);
   //delay(50);
+  #ifdef DEBUG
   Serial.println("Sending " + LoRaMessage + " to 0x" + (destination));
+  #endif
   LoRa_sendMessage(LoRaMessage);
   count++;  //increment message ID
 }
@@ -91,7 +90,9 @@ void loraAck_wait()
   }
   if (isAcknoledged)
   {
+    #ifdef DEBUG
     Serial.println("Controller ACK");
+    #endif
     isAcknoledged = false;
   }
   else
@@ -103,7 +104,9 @@ void loraAck_wait()
 
 void on_TxDone()
 {
+  #ifdef DEBUG
   Serial.println("TxDone");
+  #endif
   LoRa_rxMode();
 }
 
@@ -116,41 +119,44 @@ void on_receive(int packetSize)
   }
   //delay(400);
   // if message is for this device, or broadcast, print details:
+  #ifdef DEBUG
   Serial.print("Message: ");
   Serial.println(incoming);
   Serial.println("RSSI: " + String(LoRa.packetRssi()));
   Serial.println("Snr: " + String(LoRa.packetSnr()));
   Serial.println();
+  #endif
   isAcknoledged = true;
-  //isPktAvailable = true;
   if (incoming == onAck)
   {
-    sec = 5;
+    sec = 5; //set sleep time to 5 seconds
   }
   else if (incoming == offAck)
   {
-    sec = 900;
+    sec = 900; //set sleep time to 15 minutes
   }
   else
   {
-    sec = 60;
+    sec = 60; //go to sleep for one minute
   }
   LoRa_txMode();
 }
 
 void LoRa_rxMode() // lora receive mode
 {
-  //LoRa.enableInvertIQ();                // active invert I and Q signalsLoRa.idle();
   LoRa.receive();
-  //Serial.println("rxMode");
-  //delay(5);
+  #ifdef DEBUG
+  Serial.println("rxMode");
+  #endif
 }
 
 void LoRa_txMode() // lora transmit mode
 {
   LoRa.idle();                          // set standby mode
   LoRa.disableInvertIQ();               //tx mode
+  #ifdef DEBUG
   Serial.println("txMode");
+  #endif
   delay(5);
 }
 
@@ -160,9 +166,11 @@ void setup() // setup routine to run once
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   while (!Serial);
+  #ifdef DEBUG
+  Serial.println("IoTuneZ AWMS");
   Serial.println("Ultrasonic Sensor HC-SR04 Sleep Activated");
-  Serial.println("with Arduino Nano");
-  Serial.println("LoRa Sender");
+  Serial.println("Level Monitor Debugging Mode");
+  #endif
   LoRa.setPins(csPin, resetPin, irqPin);
   if (!LoRa.begin(433E6))
   {
@@ -180,6 +188,6 @@ void loop() //loop routine
   //LoRa_txMode();
   sendData(); //Read data from sensor and send it over LoRa
   loraAck_wait(); //Wait for ack for maximum 5 seconds
-  //Go to Sleep as per ack
+  //Go to Sleep as per the received acknowledgement
   system_sleep(sec);
 }
