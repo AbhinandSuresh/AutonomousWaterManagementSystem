@@ -51,6 +51,7 @@ void system_sleep(int sleepVal)
   }
   return;
 }
+
 void LoRa_sendMessage(String message)
 {
   LoRa_txMode();                        // set tx mode
@@ -78,6 +79,7 @@ void sendData()
   LoRa_sendMessage(LoRaMessage);
   count++;  //increment message ID
 }
+
 void loraAck_wait()
 {
   //Receive Ack
@@ -136,7 +138,7 @@ void on_receive(int packetSize)
   LoRa_txMode();
 }
 
-void LoRa_rxMode()
+void LoRa_rxMode() // lora receive mode
 {
   //LoRa.enableInvertIQ();                // active invert I and Q signalsLoRa.idle();
   LoRa.receive();
@@ -144,7 +146,7 @@ void LoRa_rxMode()
   //delay(5);
 }
 
-void LoRa_txMode()
+void LoRa_txMode() // lora transmit mode
 {
   LoRa.idle();                          // set standby mode
   LoRa.disableInvertIQ();               //tx mode
@@ -152,7 +154,7 @@ void LoRa_txMode()
   delay(5);
 }
 
-void setup()
+void setup() // setup routine to run once
 {
   Serial.begin(115200);
   pinMode(trigPin, OUTPUT);
@@ -171,7 +173,7 @@ void setup()
   LoRa.onTxDone(on_TxDone);
 }
 
-void loop()
+void loop() //loop routine
 {
   LoRa.onReceive(on_receive);
   LoRa.onTxDone(on_TxDone);
