@@ -5,11 +5,7 @@
 AESLib aesLib;
 String kim="r9Huf1ov92qFJMtG";
 // AES Encryption Key
-//char kim []="Awjksitiryg36dt9";
-//char kim []={ '53','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E','4E',};
 byte aesKey[] = {kim[0], kim[1], kim[2], kim[3], kim[4], kim[5], kim[6], kim[7], kim[8], kim[9], kim[10], kim[11], kim[12], kim[13], kim[14], kim[15]};
-//byte aesKey[] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x2B, 0x09, 0xCF, 0x4F, 0x3C };
-
 // General initialization vector (use your own)
 byte aesIv[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -21,13 +17,10 @@ void aesInit() {
 
 }
 String decrypt(char * msg, byte iv[]) {
-  unsigned long ms = micros();
+ 
   int msgLen = strlen(msg);
   char decrypted[msgLen]; // half may be enough
   aesLib.decrypt64(msg, msgLen, decrypted, aesKey, sizeof(aesKey), iv);
-  Serial.print("Decryption [2] took: ");
-  Serial.print(micros() - ms);
-  Serial.println("us");
   Serial.println(decrypted);
   return String(decrypted);
 }
@@ -54,7 +47,7 @@ char cleartext[256];
 char ciphertext[512];
 String encrypted="qjGcA6zUUTFkxB7cf/I8/Ot7RsWAPzXxvpjPCySE7GH2nLiIcqTN6Xx304qTExtWMqzVeKrV/yHOYfif1jIsuRhVtF/+9Hp3jMMM1zi3ezS4eOq3om2kwJ7C1ZVZPgIN";
 
-// zEDQYJuYhIV5lLJeIB3qlQ==
+
 
 void loop() {
   loopcount++;

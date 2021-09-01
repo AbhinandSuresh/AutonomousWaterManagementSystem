@@ -29,6 +29,9 @@ bool  spiffsActive = false;
 #define MONTHLYFILE "/monthlyfile.txt"
 #define DAILYFILE "/dailyfile.txt"
 #define BATTERYSTATUS "/batteryfile.txt"
+#define HOUR 10;
+#define DAY 10;
+#define MONTH 10;
 
 struct water
 {
@@ -41,13 +44,14 @@ void getTime() {
   epoch = timeClient.getEpochTime();
 }
 
+//to solve bit rollover after 49 days
 void times() {
   if (lastsnap < nowtime) {
     currenttime = epoch - (lastsnap / 1000) + (nowtime / 1000);
   }
  if (lastsnap > nowtime) {
-    newepoch = currenttime;
-    currenttime = newepoch - (lastsnap / 1000) + (nowtime / 1000);
+    epoch = currenttime;
+    currenttime = epoch - (lastsnap / 1000) + (nowtime / 1000);
   }
 }
 // Initialize WiFi
@@ -72,19 +76,15 @@ void readfile(char * filename, float *average) {
   while (MyFile.available()) {  // Read line by line from the file
     lineNumber++;
     line = MyFile.readStringUntil('\n');
-    //Serial.println(line);
     int coma = line.indexOf(",");
     String savedtime = line.substring(0, coma);
     float waterlevel = line.substring(coma + 1).toInt();
     sumWaterlevel += waterlevel;
-    //Serial.println(lineNumber);
-    //Serial.println(sumWaterlevel);
   }
   *average = sumWaterlevel / lineNumber;
-  //Serial.println(*average);
   MyFile.close();
-  SPIFFS.remove(filename);
 }
+
 void writeFile(char * filename, struct water * tankdata)
 {
   if (spiffsActive) {
@@ -123,6 +123,7 @@ void SaveDialyData() {
   writeFile(DAILYFILE, &tankdata);
   lastDailySavedTime = currenttime;
   Serial.println("data saved in daily file");
+  SPIFFS.remove(HOURLYFILE);
 
 }
 
@@ -135,6 +136,7 @@ void SaveMonthlyData() {
   writeFile(MONTHLYFILE, &tankdata);
   lastMonthlySavedTime = currenttime;
   Serial.println("data saved in daily file");
+  SPIFFS.remove(DAILYFILE);
 }
 
 void setup() {
@@ -163,21 +165,18 @@ void loop() {
   struct water tankdata;
   tankdata.savetime = 126798247;
   tankdata.level = 10;
-  if ((currenttime - lastHourlySavedTime) >= 10) {
+  if ((currenttime - lastHourlySavedTime) >= HOUR) {
     SaveHourlyData(&tankdata);
   }
-  if ((currenttime - lastDailySavedTime) >= 20) {
+  if ((currenttime - lastDailySavedTime) >= DAY) {
 
     SaveDialyData();
 
   }
-  if ((currenttime - lastMonthlySavedTime) >= 100) {
+  if ((currenttime - lastMonthlySavedTime) >= MONTH) {
 
     SaveMonthlyData();
 
   }
-  //Serial.println(epoch);
- //Serial.println(newepoch); 
-  //Serial.println(currenttime);
   nowtime = millis();
 }
