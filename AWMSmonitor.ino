@@ -11,19 +11,20 @@
 #include <LowPower.h>
 #include <SPI.h>
 #include <LoRa.h>
-#include<String.h>
+#include <String.h>
 #define ECHO_PIN 5            // Echo pin of Ultrasonic sensor
 #define TRIGGER_PIN 6         // Trigger pin of Ultrasonic sensor
 #define LORA_FREQUENCY 433E6  // Set LoRa frequency 
 #define BAUD_RATE 9600        // Serial baud rate
-#define onAck "mon"           // Expected Acknowledgement for motor power on (May be updated after cyphering)
-#define offAck "mof"          // Expected Acknowledgement for motor power off (May be updated after cyphering)
-#define ON_SLEEP 5            // Time in seconds for Board sleeps while motor is on
-#define OFF_SLEEP 900         // Time in seconds for Board sleeps while motor is off
+#define ON_ACK_SLEEP 5        // Time in seconds for Board sleeps while motor is on
+#define OFF_ACK_SLEEP 900     // Time in seconds for Board sleeps while motor is off
 #define NO_ACK_SLEEP 60       // Time in seconds for Board sleeps while NACK state
+#define ACK_WAIT_COUNT 5000   // Time in milliseconds to wait for Acknowledgement (5000 ms default)
 #define CS_PIN 10             // LoRa radio chip select
 #define RST_PIN 9             // LoRa radio Reset pin
 #define IRQ_PIN 2             // LoRa hardware interrupt pin
+#define onAck 0x01            // Expected Acknowledgement for motor power on (May be updated after cyphering)
+#define offAck 0x02           // Expected Acknowledgement for motor power off (May be updated after cyphering)
 /*
  * Define DEBUG for Debug Mode
  * DEBUG_LEVEL 0,1,2 can be used for various debugging levels
@@ -47,14 +48,23 @@
 #define debug_Print(x)
 #endif
 
+/*
+ * The value of enum Motor Status : 1,2,3
+ * The value of enum DeviceID : 
+   Level Monitor: 5, Conroller: 6, Relay Board: 7
+ * The default value of enum machine state : 
+   Pairing Mode: 10, Config Mode: 11, Receive Mode: 16, Transmit Mode: 17
+*/
+enum motor_state{motor_on=0x01,motor_off,motor_error};
+enum device_id{level_monitor_ID=0x05,controller_ID,relay_module_ID};
+enum machine_state{pairing=0xa, configuring, lora_receive=0x10, lora_transmit};
 int sec = 1;                    //default sleep delay seconds
 byte localAddress = 0xFF;       // address of this device
-byte destination = 0x80;        // destination to send to
+byte destination = 0x80;        // destination to send to ; will be updated after configuration
 String acknowledgment;
 long duration;
 float level;
 byte count = 0;
-String device_id = "IoTuneZ_906: "; // a fancy device id
 int loraval;
 bool isPktAvailable = false;
 String  pkt = "";
@@ -71,25 +81,16 @@ void loraSetup()
 /*Function for arduino board to go to sleep for some seconds*/
 void system_sleep(int sleepVal)
 {
-  delay(5);
   debug_Println(2,"going to sleep for " + String(sleepVal) + "seconds.");
   Serial.flush();
   for (sleepVal; (sleepVal) > 0; (sleepVal)--)
   {
     LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_OFF, TWI_OFF);
-    delay(5);
   }
   return;
 }
-void LoRa_sendMessage(String message)
-{
-  LoRa_txMode();                        // set tx mode
-  LoRa.beginPacket();                   // start packet
-  LoRa.print(message);                  // add payload
-  LoRa.endPacket(true);                 // finish packet and send it
-}
 
-void sendData()
+float water_levelSense()
 {
   digitalWrite(TRIGGER_PIN, LOW);
   delayMicroseconds(2);
@@ -101,18 +102,30 @@ void sendData()
   duration = pulseIn(ECHO_PIN, HIGH);
   // Calculating the level
   level = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-  //delay(100);
-  String LoRaMessage = String(device_id) + String(count) + ">" + String(level);
-  //delay(50);
+  return level;
+}
+
+void LoRa_sendMessage(String message)
+{
+  LoRa_txMode();                        // set tx mode
+  LoRa.beginPacket();                   // start packet
+  LoRa.print(message);                  // add payload
+  LoRa.endPacket(true);                 // finish packet and send it
+}
+
+void sendData(float message)
+{
+  String LoRaMessage = String(level_monitor_ID) + String(count) + ">" + String(message);
   debug_Println(2,"Sending " + LoRaMessage + " to 0x" + (destination));
   LoRa_sendMessage(LoRaMessage);
   count++;  //increment message ID
 }
+
 void loraAck_wait()
 {
+  int count= ACK_WAIT_COUNT;
   //Receive Ack
   //wait for Acknoledgement
-  int count = 5000; //to wait for 5 seconds (5000 ms)
   while (!isAcknoledged && count--)
   {
     delay(1);
@@ -125,7 +138,7 @@ void loraAck_wait()
   else
   {
     debug_Println(0,"Controller NACK");
-    sec = 15;
+    sec = NO_ACK_SLEEP;
   }
 }
 
@@ -142,7 +155,6 @@ void on_receive(int packetSize)
   {
     incoming += (char)LoRa.read();
   }
-  //delay(400);
   // if message is for this device, or broadcast, print details:
   debug_Print(2,"Message: ");
   debug_Println(2,incoming);
@@ -152,11 +164,11 @@ void on_receive(int packetSize)
   //isPktAvailable = true;
   if (incoming == onAck)
   {
-    sec = ON_SLEEP;
+    sec = ON_ACK_SLEEP;
   }
   else if (incoming == offAck)
   {
-    sec = OFF_SLEEP;
+    sec = OFF_ACK_SLEEP;
   }
   else
   {
@@ -169,7 +181,6 @@ void LoRa_rxMode()
 {
   LoRa.receive();
   debug_Println(1,"rxMode");
-  //delay(5);
 }
 
 void LoRa_txMode()
@@ -177,7 +188,6 @@ void LoRa_txMode()
   LoRa.idle();                          // set standby mode
   LoRa.disableInvertIQ();               //tx mode
   debug_Println(1,"txMode");
-  delay(5);
 }
 
 void setup()
@@ -197,7 +207,8 @@ void loop()
   loraSetup(); // initialize LoRa
   LoRa.onReceive(on_receive);
   LoRa.onTxDone(on_TxDone);
-  sendData(); //Read data from sensor and send it over LoRa
+  float val= water_levelSense(); //Read distance from the sensor to the water level
+  sendData(val); //Send data over LoRa
   loraAck_wait(); //Wait for ack for maximum 5 seconds
   //Go to Sleep as per ack
   system_sleep(sec);
