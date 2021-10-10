@@ -17,19 +17,19 @@
 /*
  * Define DEBUG for Debug Mode
  * DEBUG_LEVEL 0,1,2 can be used for various debugging levels
- * 0: Verbose mode
+ * 2: Verbose mode
  * 1: Debug mode
- * 2: End user mode 
+ * 0: End user mode 
 */
 #define DEBUG
 #define DEBUG_LEVEL 1
 #ifdef DEBUG
 #define debug_Println(level,msg) { \
-        if(DEBUG_LEVEL <= level) \
+        if(DEBUG_LEVEL >= level) \
         Serial.println(msg); \
         }
 #define debug_Print(level,msg) { \
-        if(DEBUG_LEVEL <= level) \
+        if(DEBUG_LEVEL >= level) \
         Serial.print(msg); \
         }
 #else
@@ -52,6 +52,6 @@ void setup()
 
 void loop() 
 {
-  debug_Println(0,"Main thread running...");
+  debug_Println(2,"Main thread running...");
   delay(1000);                                    //FIXME: REMOVE THIS DELAY AFTER ADDING MAIN THREAD FUNCTIONS
 }
