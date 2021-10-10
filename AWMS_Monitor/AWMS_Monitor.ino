@@ -14,7 +14,6 @@
 #define CS_PIN 10             // LoRa radio chip select
 #define RST_PIN 9             // LoRa radio Reset pin
 #define IRQ_PIN 2             // LoRa hardware interrupt pin
-
 /*
  * Define DEBUG for Debug Mode
  * DEBUG_LEVEL 0,1,2 can be used for various debugging levels
@@ -38,40 +37,21 @@
 #define debug_Print(x)
 #endif
 
-void serialInit()
+void setup() 
 {
-  Serial.begin(SERIAL_BAUD);
-}
-void loraInit()
-{
+  Serial.begin(SERIAL_BAUD);                      //initialize Serial port communication for debugging
+  debug_Println(1,"\nSerial Init Success...");    //display status for debugging
+  //Initialize Lora radio.
   if (!LoRa.begin(LORA_FREQUENCY))
     {
       debug_Println(1,"Starting LoRa failed!");
-      while (1);      //Halt if LoRa failed to initiate
+      while (1);                                  //Loop for ever if lora initialization failed
     }
-}
-void setup() 
-{
-  /*
-   * add setup and initialization routine(s) here
-  */
-  serialInit();                                   //initialize Serial port communication for debugging
-  debug_Println(1,"\nSerial Init Success...");    //display status for debugging
-  loraInit();                                     //Initialize Lora radio. halt if any error.
-  debug_Println(1,"\nLoRa Init Success...");      //display status for debugging
-  /*
-   * add setup and initialization routine(s) here
-  */
+  debug_Println(1,"\nLoRa Init Success...");      //display lora initialization success status for debugging
 }
 
 void loop() 
 {
-  /*
-   * add main thread routine(s) here
-  */
-  debug_Println(2,"Main thread running...");
-  delay(1000); //FIXME: REMOVE THIS LINE AFTER ADDING MAIN THREAD FUNCTIONS
-  /*
-   * add main thread routine(s) here
-  */
+  debug_Println(0,"Main thread running...");
+  delay(1000);                                    //FIXME: REMOVE THIS DELAY AFTER ADDING MAIN THREAD FUNCTIONS
 }
