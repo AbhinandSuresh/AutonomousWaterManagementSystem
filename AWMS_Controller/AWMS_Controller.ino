@@ -50,10 +50,47 @@ void setup()
    while (true);                     // if failed, loop for ever.
   }
   debug_Println(1,"Lora Init Success...");
+
+  //Initialize GPIO pins OUTPUT, INPUT
+  //gpioInit();
+
+  //Initialize OLED
+  //oledInit(sda,scl);
+
+  //initialize WiFi
+  //create_access_point.
+  //wifiInit();
+
+  //async_webserver_to_save_the_conigfuration
+  //async webServer(function to handle input data);
+
+  //Initialize NTP
+  //ntpInit();//save UTC time.
+
+  //Initialize AES
+  //aesInit();
+  
+  //initialize file system
+  //spiffInit();
+  //system reset flag 
+
+  //set button gpio as input hardware interupt
+  //ISR for button interupt(set number as per secs)
 }
 
 void loop() 
 {
+  
   debug_Println(2,"Main thread running...");
-  delay(1000); //FIXME: REMOVE THIS LINE AFTER ADDING MAIN THREAD FUNCTIONS
+
+  //Button press handler (function to handle what to do with each type of button press comes in)
+
+  //check last message (function to check if any message is received)
+
+  //message handler function (Function to handle message if any message is received)
+
+  //sync time function (sync time every 3 days w.r.t to last time synced)
+
+  //update millis
+  
 }
