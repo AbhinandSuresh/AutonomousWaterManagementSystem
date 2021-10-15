@@ -48,10 +48,40 @@ void setup()
       while (1);                                  //Loop for ever if lora initialization failed
     }
   debug_Println(1,"\nLoRa Init Success...");      //display lora initialization success status for debugging
+
+  //Initialize GPIO pins OUTPUT, INPUT
+  //gpioInit();
+  
+  //Initialize AES
+  //aesInit();
+  
+  //initialize file system
+  //spiffInit();
+  //system reset flag 
+
+  //set button gpio as input hardware interupt
+  //ISR for button interupt(set number as per secs)
+
+
 }
 
 void loop() 
 {
   debug_Println(2,"Main thread running...");
-  delay(1000);                                    //FIXME: REMOVE THIS DELAY AFTER ADDING MAIN THREAD FUNCTIONS
+
+    //Button press handler (function to handle what to do with each type of button press comes in)
+   
+   //Function to read battery and sensor data
+
+   //Check  for low threshold and backoff flag (send message if reached and recieve ack)
+
+   //check for high threshold (Send message if reached  and recieve ack)
+
+   //check for low battery (send alarm message and recieve ack)
+
+   //check if last send message time is greater than the time set in config.(if yes send message and recieve ack)
+    
+  //update millis
+    
+   //sleep
 }

@@ -71,7 +71,14 @@ void setup()
   //aesInit();
   
   //initialize file system
-  //spiffInit();
+   if (SPIFFS.begin()) 
+   {
+    debug_Println(1,"\nSPIFFS Active");
+  } 
+  else {
+    debug_Println(1,"\nUnable to activate SPIFFS");
+  }
+}
   //system reset flag 
 
   //set button gpio as input hardware interupt
