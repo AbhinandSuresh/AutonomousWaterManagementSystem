@@ -20,7 +20,7 @@
 #define SDA_PIN 10              //OLED I2c Data pin 
 #define SCL_PIN 9               //OLED I2c Clock pin 
 #define ADDRESS 0x3c            //address of 126X64 OLED
-/Declaring Object of SSD1306Wire :@address ,@SDA_PIN,@SCK_PIN
+//Declaring Object of SSD1306Wire :@address ,@SDA_PIN,@SCK_PIN
 SSD1306Wire display(ADDRESS,SDA_PIN,SCL_PIN); 
 
 /*
