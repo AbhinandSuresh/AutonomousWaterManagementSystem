@@ -82,7 +82,7 @@ void setup()
   //aesInit();
   
   //initialize file system
-   *if (SPIFFS.begin()) 
+   if (SPIFFS.begin()) 
    {
     debug_Println(1,"\nSPIFFS Active");
   } 
