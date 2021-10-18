@@ -44,7 +44,7 @@ int timePressStart = 0;
 int timePressStop = 0;
 int PressedTime = 0;
 
-void isr()             //ISR function for the button. Need to save it in RAM to prevent the code from crashing.
+void isr()             //ISR function for the button press.
 {
  int buttonState = digitalRead(button);  //Get whether the button is HIGH or LOW ( Pressed or Released)
  if (buttonState == HIGH && millis() > (timePressStop+200) ) 
