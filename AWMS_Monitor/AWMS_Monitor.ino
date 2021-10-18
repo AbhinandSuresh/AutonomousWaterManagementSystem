@@ -37,7 +37,7 @@
 #define debug_Print(x)
 #endif
 
-const int button = 3; //Digital pin to connect physical button on ESP8266
+const int button = 3; //Digital pin to connect physical button on Arduino Nano
 int lastButtonPressed = 0; //Counter to save the last state
 int buttonPressed = 0; //Counter to set the current state
 int timePressStart = 0;
@@ -117,8 +117,6 @@ void setup()
   //set button gpio as input hardware interupt
   //ISR for button interupt(set number as per secs)
    attachInterrupt(digitalPinToInterrupt(button), isr, CHANGE);
-
-
 }
 
 void loop() 
