@@ -8,9 +8,14 @@
 
 #include <Wire.h>
 //For I2C Communication.
+#include <TimeLib.h>
+//For conversion of  Utc time to human readable time.
 #include "SSD1306Wire.h"
-//For initializing  the necessary information on the display
+//For oled display interfacing 
 
-void oledInit(SSD1306Wire display);
-//For initialization of the display :@object of SSD1306Wire
+//For initializing  the necessary information on the display
+void oledInit(SSD1306Wire &display);
+//For initialization of the display :@refrence object of SSD1306Wire
+void printTime(SSD1306Wire &display,unsigned long t_unix );
+//For initialization of the display :@refrence object of SSD1306Wire,@unix_time 
 #endif
