@@ -37,6 +37,60 @@
 #define debug_Print(x)
 #endif
 
+const int button = 3; //Digital pin to connect physical button on Arduino Nano
+int lastButtonPressed = 0; //Counter to save the last state
+int buttonPressed = 0; //Counter to set the current state
+int timePressStart = 0;
+int timePressStop = 0;
+int PressedTime = 0;
+
+void isr()             //ISR function for the button press.
+{
+ int buttonState = digitalRead(button);  //Get whether the button is HIGH or LOW ( Pressed or Released)
+ if (buttonState == HIGH && millis() > (timePressStop+200) ) 
+ {  
+  timePressStart = millis();
+  buttonPressed = 1;
+ }
+ else
+ {
+  timePressStop = millis();
+ }
+}
+
+// Function to return the value according to the time elapsed since the button pressed.
+
+int getButtonPress(void)
+{   
+  int ret = 0;  //return value
+  int timestamp = timePressStop < timePressStart ? millis() : timePressStop;
+  int timediff = timestamp - timePressStart;
+  if(!buttonPressed)
+    return 0;
+  if(lastButtonPressed <3 && timediff  > 6000)
+  {
+    ret  = 3;
+  }
+  else if(lastButtonPressed <2 && timediff  > 3000)
+  {
+    ret  = 2;
+  }  
+  else if(lastButtonPressed <1 && timediff  > 100) 
+  {
+    ret = 1;
+  }
+  if(ret)
+  {
+    lastButtonPressed = ret;
+  }
+  if (digitalRead(button) == LOW)
+  {
+    lastButtonPressed = 0;
+    buttonPressed = 0;      
+  }  
+  return ret;
+}
+
 void setup() 
 {
   Serial.begin(SERIAL_BAUD);                      //initialize Serial port communication for debugging
@@ -50,6 +104,7 @@ void setup()
   debug_Println(1,"\nLoRa Init Success...");      //display lora initialization success status for debugging
 
   //Initialize GPIO pins OUTPUT, INPUT
+   pinMode(button , INPUT);
   //gpioInit();
   
   //Initialize AES
@@ -61,8 +116,7 @@ void setup()
 
   //set button gpio as input hardware interupt
   //ISR for button interupt(set number as per secs)
-
-
+   attachInterrupt(digitalPinToInterrupt(button), isr, CHANGE);
 }
 
 void loop() 
