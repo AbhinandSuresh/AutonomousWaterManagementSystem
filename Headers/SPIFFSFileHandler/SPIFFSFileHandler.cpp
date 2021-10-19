@@ -7,7 +7,7 @@
 #include "FS.h"
 #include "SPIFFSFileHandler.h"
 
-*
+/*
  * Define DEBUG for Debug Mode
  * DEBUG_LEVEL 0,1,2 can be used for various debugging levels
  * 2: Verbose mode
