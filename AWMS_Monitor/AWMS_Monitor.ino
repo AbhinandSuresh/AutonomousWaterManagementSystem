@@ -9,6 +9,9 @@
 */
 #include <SPI.h>              // include libraries
 #include <LoRa.h>
+#include <AESLib.h>
+#include "AESEncryptDecrypt.h"
+
 #define LORA_FREQUENCY 433E6  // Set LoRa frequency 
 #define SERIAL_BAUD 9600      // Serial baud rate
 #define CS_PIN 10             // LoRa radio chip select
@@ -37,6 +40,13 @@
 #define debug_Print(x)
 #endif
 
+AESLib aesLib;//AESLib object
+
+// AES Encryption Key
+char kim[]="r9Huf1ov92qFJMtG";
+byte aesKey[] = {kim[0], kim[1], kim[2], kim[3], kim[4], kim[5], kim[6], kim[7], kim[8], kim[9], kim[10], kim[11], kim[12], kim[13], kim[14], kim[15]};
+// General initialization vector (use your own)
+byte aesIv[] = { 2, 4, 123, 12, 45, 21, 35, 23, 44, 22, 24, 24, 45, 6, 32, 24 };
 const int button = 3; //Digital pin to connect physical button on Arduino Nano
 int lastButtonPressed = 0; //Counter to save the last state
 int buttonPressed = 0; //Counter to set the current state
@@ -108,7 +118,7 @@ void setup()
   //gpioInit();
   
   //Initialize AES
-  //aesInit();
+   aesInit(&aesLib,aesIv);
   
   //initialize file system
   //spiffInit();
