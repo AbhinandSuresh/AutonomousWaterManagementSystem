@@ -12,6 +12,9 @@
 #include <Wire.h>
 #include "WMMOled.h"
 #include "SSD1306Wire.h"
+#include <AESLib.h>
+#include "AESEncryptDecrypt.h"
+
 #define LORA_FREQUENCY 433E6    // Set LoRa frequency
 #define SERIAL_BAUD 9600        // Set serial baud rate for debugging
 #define CS_PIN 15               // LoRa radio chip select
@@ -46,12 +49,20 @@ SSD1306Wire display(ADDRESS,SDA_PIN,SCL_PIN);
 #define debug_Print(x)
 #endif
 
+AESLib aesLib;//AESLib object
+
+// AES Encryption Key
+char kim[]="r9Huf1ov92qFJMtG";
+byte aesKey[] = {kim[0], kim[1], kim[2], kim[3], kim[4], kim[5], kim[6], kim[7], kim[8], kim[9], kim[10], kim[11], kim[12], kim[13], kim[14], kim[15]};
+// General initialization vector (use your own)
+byte aesIv[] = { 2, 4, 123, 12, 45, 21, 35, 23, 44, 22, 24, 24, 45, 6, 32, 24 };
 const int button = 2; //Digital pin to connect physical button on ESP8266
 int lastButtonPressed = 0; //Counter to save the last state
 int buttonPressed = 0; //Counter to set the current state
 int timePressStart = 0;
 int timePressStop = 0;
-int PressedTime = 0;  
+int PressedTime = 0; 
+ 
 
 void ICACHE_RAM_ATTR isr()             //ISR function for the button. Need to save it in RAM to prevent the code from crashing.
 {
@@ -133,7 +144,7 @@ void setup()
   //ntpInit();//save UTC time.
 
   //Initialize AES
-  //aesInit();
+   aesInit(&aesLib,aesIv);
   
   //initialize file system
    if (SPIFFS.begin()) 
