@@ -14,6 +14,11 @@
 #include "SSD1306Wire.h"
 #include <AESLib.h>
 #include "AESEncryptDecrypt.h"
+#include <ESP8266WiFi.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <string.h>
+#include "FS.h"
 
 #define LORA_FREQUENCY 433E6    // Set LoRa frequency
 #define SERIAL_BAUD 9600        // Set serial baud rate for debugging
@@ -49,6 +54,10 @@ SSD1306Wire display(ADDRESS,SDA_PIN,SCL_PIN);
 #define debug_Print(x)
 #endif
 
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 AESLib aesLib;//AESLib object
 
 // AES Encryption Key
@@ -61,8 +70,29 @@ int lastButtonPressed = 0; //Counter to save the last state
 int buttonPressed = 0; //Counter to set the current state
 int timePressStart = 0;
 int timePressStop = 0;
-int PressedTime = 0; 
+int PressedTime = 0;
+// Variable to save current epoch time
+unsigned long lastsnap;
+unsigned long currenttime;
+unsigned long nowtime;
+unsigned long epoch; 
  
+// Function that gets current epoch time
+void getTime() {
+  timeClient.update();
+  epoch = timeClient.getEpochTime();
+} 
+
+//Function to calculate the currenttime and handle bit rollover after 49 days
+void currentTime() {
+  if (lastsnap < nowtime) {
+    currenttime = epoch - (lastsnap / 1000) + (nowtime / 1000);
+  }
+ if (lastsnap > nowtime) {
+    epoch = currenttime;
+    currenttime = epoch - (lastsnap / 1000) + (nowtime / 1000);
+  }
+}
 
 void ICACHE_RAM_ATTR isr()             //ISR function for the button. Need to save it in RAM to prevent the code from crashing.
 {
@@ -141,7 +171,10 @@ void setup()
   //async webServer(function to handle input data);
 
   //Initialize NTP
-  //ntpInit();//save UTC time.
+  timeClient.begin();
+  getTime();
+  debug_Println(1,epoch);
+  lastsnap = millis();
 
   //Initialize AES
    aesInit(&aesLib,aesIv);
@@ -166,7 +199,7 @@ void setup()
 
 void loop() 
 {
-  
+  currentTime();
   debug_Println(2,"Main thread running...");
 
   //Button press handler (function to handle what to do with each type of button press comes in)
@@ -178,5 +211,6 @@ void loop()
   //sync time function (sync time every 3 days w.r.t to last time synced)
 
   //update millis
+  nowtime = millis();
   
 }
